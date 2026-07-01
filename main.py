@@ -1,6 +1,6 @@
 import logging
-from fastapi import FastAPI, Response, Cookie
-from environs import Env
+from fastapi import FastAPI, Response, Cookie, HTTPException, status
+# from environs import Env
 from models import User, Feedback, UserCreate
 
 
@@ -8,8 +8,8 @@ from models import User, Feedback, UserCreate
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 app = FastAPI()
-env = Env()
-env.read_env()
+# env = Env()
+# env.read_env()
 
 # user_data = {
 #     "age": 1,
@@ -97,7 +97,7 @@ def read_root(keyword: str, category: str | None = None, limit: int | None = 10)
     return result[:limit]
 
 import uuid
-id = ''
+# id = ''
 user_data = {
     "username": "user123",
     "password": "password123"
@@ -105,17 +105,22 @@ user_data = {
 
 @app.post("/login")
 def read_root(user: User, response: Response):
-    print(user)
-    if user.username == "user123" and user.password == "password123":
-        global id
+    # print(user)
+    if user.username == user_data.username and user.password == user_data.password:
+        # nonlocal id
         id= uuid.uuid4()
         response.set_cookie(key="session_token", value=id, max_age=3600, httponly=True)
 
         return {"message": "Login successful"}
 
 @app.get("/user")
-def read_root(session_token = Cookie()):
+def read_root(session_token: str | None = Cookie(default=None)):
+    print('session_token', session_token)
     if session_token and session_token == str(id):
         return user_data
     
-    return {"error": "invalid_token_value"}
+    raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized"
+        )
+    # return {"message": "Unauthorized"}
