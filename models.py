@@ -25,3 +25,6 @@ class Feedback(BaseModel):
     message: str = Field(min_length=10, max_length=500)
     name: str = Field(min_length=2, max_length=50)
     contact: Contact
+
+class Item(BaseModel):
+    name: str
